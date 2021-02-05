@@ -8,7 +8,7 @@ app.use(express.json())
 const port = (process.env.PORT || 4000)
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
-const MONGODB_URI = (process.env.MONGODB_URI || 'mongodb://127.0.0.1/chatroom')
+const MONGODB_URI = process.env.MONGODB_URI
 
 const mongoose = require('mongoose')
 
