@@ -32,9 +32,7 @@ userRouter.post('/register',(req, res) => {
 })
 
 userRouter.post('/login', passport.authenticate('local', {session: false}), (req, res) => {
-    console.log("got here")
     if(req.isAuthenticated()){
-        console.log("and here")
         const {_id, username, role, balance, matches } = req.user
         const token = signToken(_id)
         res.cookie('access_token', token, {httpOnly: true, sameSite: true})
