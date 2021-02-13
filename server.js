@@ -7,14 +7,14 @@ const url = require("url")
 // const proxy = url.parse(process.env.QUOTAGUARDSHIELD_URL)
 app.use(cookieParser())
 app.use(express.json())
-const port = (process.env.port || 80)
+const port = (process.env.port || 4000)
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const MONGODB_URI = process.env.MONGODB_URI
 
 const mongoose = require('mongoose')
 
-mongoose.connect(MONGODB_URI, {useNewUrlParser: true}, () => {
+mongoose.connect(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true }, () => {
     console.log('successfully connected to database')  
 })
 
