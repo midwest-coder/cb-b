@@ -20,12 +20,22 @@ userRouter.post('/register',(req, res) => {
         if(user)
             res.status(400).json({message: {msgBody: "Username already exists", msgError: true}})
         else {
-            const newUser = new User({username, password, email, role, balance})
-            newUser.save((err) => {
+            User.findOne({email: email}, (err, user) => {
                 if(err)
-                    res.status(500).json({message: {msgBody: "Error occured saving user to database", msgError: true}})
-                else
-                    res.status(201).json({message: {msgBody: "Account successfully created", msgError: false}})
+                    res.status(500).json({message: {msgBody: "Error occured accessing database", msgError: true}})
+        
+                if(user)
+                    res.status(400).json({message: {msgBody: "Email already being used", msgError: true}})
+
+                else {
+                    const newUser = new User({username, password, email, role, balance})
+                    newUser.save((err) => {
+                        if(err)
+                            res.status(500).json({message: {msgBody: "Error occured saving user to database", msgError: true}})
+                        else
+                            res.status(201).json({message: {msgBody: "Account successfully created", msgError: false}})
+                    })
+                }
             })
         }
     })
@@ -33,10 +43,10 @@ userRouter.post('/register',(req, res) => {
 
 userRouter.post('/login', passport.authenticate('local', {session: false}), (req, res) => {
     if(req.isAuthenticated()){
-        const {_id, username, role, balance, matches } = req.user
+        const {_id, username, email, role, balance, matches } = req.user
         const token = signToken(_id)
         res.cookie('access_token', token, {httpOnly: true, sameSite: true})
-        res.status(200).json({isAuthenticated: true, user: {username, role, balance, matches}})
+        res.status(200).json({isAuthenticated: true, user: {username, email, role, balance, matches}})
     }
 })
 
@@ -44,7 +54,7 @@ const signToken = (id) => {
     return JWT.sign({
         iss: "CryptoWar",
         sub: id
-    }, "nh32899i32m908nvjkldmkjl8903f489fjnirefnvd90jdn3eyd8u9f0inrijofjrkcfid9j93", {expiresIn: "4w"})
+    }, "nh32899i32m908nvjkldmkjl8903f489fjnirefnvd90jdn3eyd8u9f0inrijofjrkcfid9j93", {expiresIn: "1w"})
 }
 
 userRouter.get('/checkUser/:username', (req, res) => {
@@ -73,8 +83,7 @@ userRouter.get('/getMatches', passport.authenticate('jwt', {session: false}), (r
         })
 })
 userRouter.get('/authenticated', passport.authenticate('jwt', {session: false}), (req, res) => {
-    const {username, role, balance, matches } = req.user
-    res.status(200).json({isAuthenticated: true, user: {username, role, balance, matches}})
+    res.status(200).json({isAuthenticated: true, user: req.user})
 })
 
 userRouter.get('/logout', passport.authenticate('jwt', {session: false}), (req, res) => {

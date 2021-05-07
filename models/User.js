@@ -32,7 +32,8 @@ const UserSchema = new mongoose.Schema({
         required: true
         //FINISH FILLING THIS OUT
     },
-    matches: [{type: mongoose.Schema.Types.ObjectId, ref: 'Match'}]
+    matches: [{type: mongoose.Schema.Types.ObjectId, ref: 'Match'}],
+    transactions: [{type: mongoose.Schema.Types.ObjectId, ref: 'Transaction'}]
 }, { timestamps: true })
 
 UserSchema.pre('save', function(next){
