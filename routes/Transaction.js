@@ -5,10 +5,9 @@ const passport = require('passport')
 const passportConfig = require('../passport')
 const Transaction = require('../models/Transaction')
 
-transactionRouter.post('/createTransaction/:type/:amount', passport.authenticate('jwt', {session: false}), (req, res) => {
+transactionRouter.post('/createTransaction', passport.authenticate('jwt', {session: false}), (req, res) => {
     const user = req.user
-    const type = req.params.type
-    const amount = req.params.amount
+    const { type, amount } = req.body
     const status = 'Initiated'
     const newTransaction = new Transaction({user, type, amount, status})
     newTransaction.save((err, transaction) => {
@@ -19,10 +18,8 @@ transactionRouter.post('/createTransaction/:type/:amount', passport.authenticate
     })
 })
 
-transactionRouter.put('/updateTransaction/:id/:hash/:status', passport.authenticate('jwt', {session: false}), (req, res) => {
-    const id = req.params.id
-    const hash = req.params.hash
-    const status = req.params.status
+transactionRouter.put('/updateTransaction', passport.authenticate('jwt', {session: false}), (req, res) => {
+    const { id, hash, status } = req.body
     Transaction.updateOne({ _id: id }, {status, hash}, (err) => {
         if(err)
             res.status(500).json({msgBody: "Error occured looking up transaction", msgError: true})

@@ -1,14 +1,23 @@
 const express = require('express')
 const userRouter = express.Router()
 const passport = require('passport')
+const open = require('open')
 //BEING USED STILL
 const passportConfig = require('../passport')
 const JWT = require('jsonwebtoken')
 const User = require('../models/User')
 const Match = require('../models/Match')
+const PassReset = require('../models/PassReset')
 const Chatroom = require('../models/Chatroom')
 const Message = require('../models/Message')
 
+
+const signToken = (id) => {
+    return JWT.sign({
+        iss: "CryptoWar",
+        sub: id
+    }, "nh32899i32m908nvjkldmkjl8903f489fjnirefnvd90jdn3eyd8u9f0inrijofjrkcfid9j93", {expiresIn: '1m'})
+}
 
 userRouter.post('/register',(req, res) => {
     const { username, password, email, role, balance} = req.body
@@ -44,27 +53,58 @@ userRouter.post('/register',(req, res) => {
 userRouter.post('/login', passport.authenticate('local', {session: false}), (req, res) => {
     if(req.isAuthenticated()){
         const {_id, username, email, role, balance, matches } = req.user
+        const { expiration } = req.body
         const token = signToken(_id)
         res.cookie('access_token', token, {httpOnly: true, sameSite: true})
         res.status(200).json({isAuthenticated: true, user: {username, email, role, balance, matches}})
     }
 })
 
-const signToken = (id) => {
-    return JWT.sign({
-        iss: "CryptoWar",
-        sub: id
-    }, "nh32899i32m908nvjkldmkjl8903f489fjnirefnvd90jdn3eyd8u9f0inrijofjrkcfid9j93", {expiresIn: "1w"})
-}
+// userRouter.post('/resetPassword/:id/:email', (req, res) => {
+//     const { id, email } = req.params
+//     PassReset.findById(id, (reset) => {
+//         const userID = reset.user
+//         if(reset)
+//             User.findById(userID, (user) => {
+//                 if(user)
+//                     if(user.email == email) {
+//                         let r = Math.random().toString(36).substring(7);
+//                         console.log("random", r);
+//                         PassReset.findByIdAndUpdate(id, {code: r}, () => {
+//                             open(`http://cryptobehemoth.com`, {})
+//                         })
+//                     }
+//             })
+//     })
+// })
 
-userRouter.get('/checkUser/:username', (req, res) => {
-    const { username } = req.params.username
-    User.findOne({ username }, (err, user) => {
-        if(!user)
-        res.status(200).json({isTaken: false})
-        else
-        res.status(200).json({isTaken: true})
+userRouter.post('/resetPassword/:id/:code', (req, res) => {
+    const { id, code } = req.params
+    PassReset.findById(id, (reset) => {
+        if(reset.code === code){
+            open(`http://cryptobehemoth.com`, {})
+        }
     })
+})
+
+userRouter.post('/checkUser', passport.authenticate('jwt', {session: false}), (req, res) => {
+    const { id } = req.user
+    const { username, email } = req.body
+    User.findOne({ username }, (err, user) => {
+        if(!user || id == user.id)
+            User.findOne({ email }, (err, user) => {
+                if(!user || id == user.id)
+                    res.status(200).json({ msgBody: username, isTaken: false})
+                else 
+                    res.status(200).json({msgBody: 'Email is already in use', isTaken: true})
+            })
+        else
+            res.status(200).json({msgBody: 'Username is already in use', isTaken: true})
+    })
+})
+
+userRouter.post('/checkPassword', passport.authenticate('local', {session: false}), (req, res) => {
+    res.status(200).json({info: req.user})
 })
 
 userRouter.get('/getUsers', passport.authenticate('jwt', {session: false}), (req, res) => {
@@ -86,14 +126,25 @@ userRouter.get('/authenticated', passport.authenticate('jwt', {session: false}),
     res.status(200).json({isAuthenticated: true, user: req.user})
 })
 
+userRouter.put('/updateUser', passport.authenticate('jwt', {session: false}), (req, res) => {
+    const { oldUser, newUsername, newEmail } = req.body
+    const { username } = oldUser
+    User.updateOne({ username }, {username: newUsername, email: newEmail}, (err, user) => {
+        if(err)
+        res.status(500).json({message: {msgBody: "Error occured accessing database", msgError: true}})
+        
+        res.status(200).json({message: { msgBody: user, msgError: false } })
+    })
+})
+
 userRouter.get('/logout', passport.authenticate('jwt', {session: false}), (req, res) => {
     res.clearCookie('access_token')
     res.json({user:{username: '', role: '', balance: ''}, success: true})
 })
 
-userRouter.put('/updateTokens/:amount', passport.authenticate('jwt', {session: false}), (req, res) => {
+userRouter.put('/updateTokens', passport.authenticate('jwt', {session: false}), (req, res) => {
     const { username } = req.user
-    const amount = req.params.amount
+    const { amount } = req.body
     User.updateOne({ username }, {balance: amount}, (err, user) => {
         if(err)
         res.status(500).json({message: {msgBody: "Error occured accessing database", msgError: true}})
