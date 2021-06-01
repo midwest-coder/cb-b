@@ -3,14 +3,14 @@ const bcrypt = require('bcrypt')
 
 const UserSchema = new mongoose.Schema({
     username: { 
-        type:  String, 
+        type: String, 
         required: true,
         lowercase: true,
         min: 3,
         max: 20
     },
     password: {
-        type:  String, 
+        type: String, 
         required: true,
         min: 6,
         max: 30
@@ -21,6 +21,17 @@ const UserSchema = new mongoose.Schema({
         lowercase: true,
         min: 6,
         max: 50
+    },
+    emailVerified: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    resetCode: {
+        type: String
+    },
+    resetExpire: {
+        type: Date
     },
     role: {
         type: String,
@@ -52,7 +63,7 @@ UserSchema.pre('save', function(next){
     })
 })
 
-UserSchema.methods.comparePassword = function(password,callback){
+UserSchema.methods.comparePassword = function(password, callback){
     bcrypt.compare(password, this.password, (err, isMatch) => {
         if(err)
             return callback(err)
@@ -61,6 +72,19 @@ UserSchema.methods.comparePassword = function(password,callback){
                 return callback(null, isMatch)
 
             return callback(null, this)
+        }
+    })
+}
+
+UserSchema.methods.compareResetCode = function(code, callback){
+    bcrypt.compare(code, this.resetCode, (err, isMatch) => {
+        if(err)
+            return callback(false)
+        else {
+            if(!isMatch)
+                return callback(false)
+
+            return callback(true)
         }
     })
 }

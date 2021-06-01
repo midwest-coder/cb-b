@@ -38,7 +38,7 @@ passport.use(new LocalStrategy((username, password, done) => {
         if(!user)
             return done(null,false)
 
-        //check that the password is correct    
+        //check that the password is correct
         user.comparePassword(password,done)
     })
 }))

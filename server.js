@@ -3,6 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 const cookieParser = require('cookie-parser')
+const path = require('path')
 // const url = require("url")
 // const proxy = url.parse(process.env.QUOTAGUARDSHIELD_URL)
 app.use(cookieParser())
@@ -18,6 +19,12 @@ const mongoose = require('mongoose')
 mongoose.connect(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true }, () => {
     console.log('successfully connected to database')  
 })
+
+// app.use(express.static(path.join(__dirname, '../client/CW/build')))
+
+//     app.get('/', (res,req) => {
+//         res.sendFile(path.join(__dirname, '../client/CW/build', 'index.html'))
+//     })
 
 
     const userRouter = require('./routes/User')
