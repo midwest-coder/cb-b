@@ -31,7 +31,7 @@ let emailTitle
 
 const mailOptions = (recipient) => {
     return {
-        from: 'Crypto Behemoth <process.env.EMAIL_ADDRESS>',
+        from: 'Silent Behemoth <process.env.EMAIL_ADDRESS>',
         to: recipient,
         subject: emailTitle,
         html: emailBody,
@@ -47,7 +47,7 @@ const signToken = (id) => {
     return JWT.sign({
         iss: "CryptoWar",
         sub: id
-    }, "nh32899i32m908nvjkldmkjl8903f489fjnirefnvd90jdn3eyd8u9f0inrijofjrkcfid9j93", {expiresIn: '1w'})
+    }, "nh32899i32m908nvjkldmkjl8903f489fjnirefnvd90jdn3eyd8u9f0inrijofjrkcfid9j93", {expiresIn : "1h"})
 }
 
 userRouter.post('/register',(req, res) => {
@@ -83,11 +83,11 @@ userRouter.post('/register',(req, res) => {
 
 userRouter.post('/login', passport.authenticate('local', {session: false}), (req, res) => {
     if(req.isAuthenticated()){
-        const {_id, username, email, role, balance, matches } = req.user
-        const { expiration } = req.body
+        const {_id, username, email, emailVerified, role, balance, matches } = req.user
+        // const { expiration } = req.body
         const token = signToken(_id)
         res.cookie('access_token', token, {httpOnly: true, sameSite: true})
-        res.status(200).json({isAuthenticated: true, user: {username, email, role, balance, matches}})
+        res.status(200).json({isAuthenticated: true, user: {username, email, emailVerified, role, balance, matches}})
     }
 })
 
@@ -112,7 +112,7 @@ userRouter.post('/createCode', (req, res) => {
                         if(!err){
                             if(type === 'Password'){
                                 emailTitle = `Password Reset`
-                                msgBody = 'Look in your email inbox for a reset message. It may take a few minutes'
+                                msgBody = 'Look in your email inbox for a reset message. Be sure to check your spam mail if not in your inbox'
                                 emailBody = `<img src="cid:cb-logo" style="width: 100%;"/><div><div style="width: 80%;border-radius: 5px;background-color: #e8e8e8;margin: 20px auto;padding: 15px;text-align: center;"><h4 style="color: #363636;">Here is your code to reset your password</h4>` + 
                                 `<h3 style="color: #526485;">${resetToken}</h3><h6 style="color: #292929;">This password reset will expire in 1 hour of being requested</h6><h6 style="color: #292929;">If you did not initiate this password reset contact our support team at admin@cryptobehemoth.com</h6></div>`
                             }
@@ -120,7 +120,7 @@ userRouter.post('/createCode', (req, res) => {
                                 emailTitle = `Email Verification`
                                 msgBody = 'Look in your email inbox for a verification message. It may take a few minutes'
                                 emailBody = `<img src="cid:cb-logo" style="width: 100%;"/><div><div style="width: 80%;border-radius: 5px;background-color: #e8e8e8;margin: 20px auto;padding: 15px;text-align: center;"><h4 style="color: #363636;">Here is your code to verify your email</h4>` + 
-                                `<h3 style="color: #526485;">${resetToken}</h3><h6 style="color: #292929;">This email verification will expire in 1 hour of being requested</h6><h6 style="color: #292929;">If you did not initiate this email verification contact our support team at admin@cryptobehemoth.com</h6></div>`
+                                `<h3 style="color: #526485;">${resetToken}</h3><h6 style="color: #292929;">This email verification will expire in 1 hour of being requested</h6><h6 style="color: #292929;">If you did not initiate this email verification contact our support team at admin@silentbehemoth.com</h6></div>`
                             }
                     
                             transporter.sendMail(mailOptions(email), function(error, info){
@@ -232,7 +232,8 @@ userRouter.get('/getMatches', passport.authenticate('jwt', {session: false}), (r
         })
 })
 userRouter.get('/authenticated', passport.authenticate('jwt', {session: false}), (req, res) => {
-    res.status(200).json({isAuthenticated: true, user: req.user})
+    const { username, email, emailVerified, role, balance, matches } = req.user
+    res.status(200).json({isAuthenticated: true, user: {username, email, emailVerified, role, balance, matches}})
 })
 
 userRouter.put('/updateUser', passport.authenticate('jwt', {session: false}), (req, res) => {

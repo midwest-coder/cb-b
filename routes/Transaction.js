@@ -21,7 +21,7 @@ let emailBody
 
 const mailOptions = (recipient) => {
     return {
-        from: 'Crypto Behemoth <process.env.EMAIL_ADDRESS>',
+        from: 'Silent Behemoth <process.env.EMAIL_ADDRESS>',
         to: recipient,
         subject: `Transaction Success`,
         html: emailBody,
@@ -64,7 +64,7 @@ transactionRouter.put('/updateTransaction', passport.authenticate('jwt', {sessio
                             else
                             type = 'sold'
                             emailBody = `<img src="cid:cb-logo" style="width: 100%;"/><div><h2 style="color: #363636;text-align: center;">Transaction Successful!</h2><div style="width: 80%;border-radius: 5px;background-color: #e8e8e8;margin: 20px auto;padding: 15px;text-align: center;"><h3 style="color: #363636;">You successfully ${type} ${transaction.amount} credits</h3>` + 
-                            `<h5 style="color: #363636;">Time: ${date}</h5 ><h5 style="color: #363636;">Transaction Hash <span style="color: linear-gradient(45deg, #32a883, #3290a8);">${hash}</span></h5><h6 style="color: #292929;">If you did not initiate this transaction contact our support team at admin@cryptobehemoth.com</h6></div>`
+                            `<h5 style="color: #363636;">Time: ${date}</h5 ><h5 style="color: #363636;">Transaction Hash <span style="color: linear-gradient(45deg, #32a883, #3290a8);">${hash}</span></h5><h6 style="color: #292929;">If you did not initiate this transaction contact our support team at admin@silentbehemoth.com</h6></div>`
                             
                             // const info = {type: type, hash: hash, amount: transaction.amount}
                             transporter.sendMail(mailOptions(email), function(error, info){

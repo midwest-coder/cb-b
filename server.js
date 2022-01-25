@@ -20,12 +20,13 @@ mongoose.connect(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true 
     console.log('successfully connected to database')  
 })
 
-// app.use(express.static(path.join(__dirname, '../client/CW/build')))
+// CODE TO CONNECT TO CLIENT
+app.use(express.static(path.join(__dirname, '/build')))
 
-//     app.get('/', (res,req) => {
-//         res.sendFile(path.join(__dirname, '../client/CW/build', 'index.html'))
-//     })
-
+    app.get('/', (res,req) => {
+        res.sendFile(path.join(__dirname, '/build', 'index.html'))
+    })
+//---------------------------
 
     const userRouter = require('./routes/User')
     const transactionRouter = require('./routes/Transaction')
